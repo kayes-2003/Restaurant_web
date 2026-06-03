@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --scrollbar-thumb: #3d2810;
+    --scrollbar-track: #0f0b06;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar { width: 6px; height: 6px; }
+  *::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+  *::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply bg-surface text-brand-100 font-body antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(212,132,26,0.08) 0%, transparent 60%);
+  }
+
+  ::selection {
+    @apply bg-brand-600 text-brand-50;
+  }
+}
+
+@layer components {
+  .card-glass {
+    @apply bg-surface-50/80 border border-brand-900/40 backdrop-blur-sm;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           px-4 py-2 rounded-lg
+           bg-brand-500 hover:bg-brand-400 active:bg-brand-600
+           text-surface font-body font-semibold text-sm
+           transition-all duration-150
+           disabled:opacity-40 disabled:pointer-events-none;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           px-3 py-1.5 rounded-lg
+           text-brand-400 hover:text-brand-200 hover:bg-brand-900/30
+           font-body text-sm transition-all duration-150;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2
+           px-3 py-1.5 rounded-lg
+           border border-brand-700/50 text-brand-300
+           hover:bg-brand-900/40 hover:border-brand-600
+           font-body text-sm transition-all duration-150;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2.5 rounded-lg
+           bg-surface-100 border border-brand-800/50
+           text-brand-100 placeholder-brand-800
+           text-sm font-body
+           outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30
+           transition-all duration-150;
+  }
+
+  .label {
+    @apply block text-xs font-semibold text-brand-500 mb-1 tracking-wide uppercase;
+  }
+
+  .badge-offer {
+    @apply absolute top-2 left-2 z-10
+           bg-red-500 text-white text-xs font-bold
+           px-2 py-0.5 rounded-full font-mono;
+  }
+
+  .badge-unavailable {
+    @apply absolute top-2 right-2 z-10
+           bg-surface-200/90 text-red-400 text-xs
+           px-2 py-0.5 rounded-full border border-red-900/40;
+  }
+
+  .category-pill {
+    @apply px-3 py-1.5 rounded-full text-xs font-semibold
+           whitespace-nowrap transition-all duration-200 cursor-pointer;
+  }
+
+  .menu-card {
+    @apply relative rounded-xl overflow-hidden
+           bg-gradient-to-br from-surface-50 to-surface
+           border border-brand-900/30
+           hover:border-brand-700/50 hover:shadow-lg hover:shadow-brand-950/50
+           transition-all duration-300 hover:-translate-y-0.5
+           cursor-pointer;
+  }
+}
