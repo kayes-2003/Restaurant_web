@@ -17,19 +17,122 @@ interface AuthModalProps {
   updatePassword:       (newPass: string) => Promise<string | null>
 }
 
+// ✅ MOVED OUTSIDE — these are now stable components
+
+const inp = 'input-field'
+
+function EmailField({ email, setEmail, clearMsgs, onEnter }: {
+  email: string
+  setEmail: (v: string) => void
+  clearMsgs: () => void
+  onEnter?: () => void
+}) {
+  return (
+    <div>
+      <label className="label">Email</label>
+      <div className="relative">
+        <Mail size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-700 pointer-events-none" />
+        <input
+          type="email"
+          value={email}
+          onChange={e => { setEmail(e.target.value); clearMsgs() }}
+          placeholder="you@example.com"
+          autoComplete="email"
+          className={`${inp} pl-9`}
+          onKeyDown={e => { if (e.key === 'Enter') onEnter?.() }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function PassField({ label = 'Password', value, onChange, auto = 'current-password', showPass, toggleShow }: {
+  label?: string
+  value: string
+  onChange: (v: string) => void
+  auto?: string
+  showPass: boolean
+  toggleShow: () => void
+}) {
+  return (
+    <div>
+      <label className="label">{label}</label>
+      <div className="relative">
+        <Lock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-700 pointer-events-none" />
+        <input
+          type={showPass ? 'text' : 'password'}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder="Min. 6 characters"
+          autoComplete={auto}
+          className={`${inp} pl-9 pr-10`}
+        />
+        <button type="button" onClick={toggleShow}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-700 hover:text-brand-400">
+          {showPass ? <EyeOff size={13} /> : <Eye size={13} />}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function Feedback({ okMsg, errMsg }: { okMsg: string; errMsg: string }) {
+  return (
+    <>
+      {okMsg && (
+        <div className="flex items-start gap-2 p-3 rounded-lg bg-green-900/20 border border-green-800/30 text-green-300 text-xs leading-relaxed">
+          <CheckCircle2 size={13} className="mt-0.5 shrink-0" /><span>{okMsg}</span>
+        </div>
+      )}
+      {errMsg && (
+        <div className="flex items-start gap-2 p-3 rounded-lg bg-red-900/20 border border-red-800/30 text-red-300 text-xs leading-relaxed">
+          <AlertCircle size={13} className="mt-0.5 shrink-0" /><span>{errMsg}</span>
+        </div>
+      )}
+    </>
+  )
+}
+
+function SubmitBtn({ label, onClick, loading }: { label: string; onClick: () => void; loading: boolean }) {
+  return (
+    <button onClick={onClick} disabled={loading} className="btn-primary w-full py-2.5">
+      {loading
+        ? <span className="flex items-center justify-center gap-2">
+            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+            Please wait…
+          </span>
+        : label
+      }
+    </button>
+  )
+}
+
+function BackBtn({ onClick, label = 'Back to Sign In' }: { onClick: () => void; label?: string }) {
+  return (
+    <button onClick={onClick}
+      className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-300 transition-colors">
+      <ArrowLeft size={12} /> {label}
+    </button>
+  )
+}
+
+// ✅ Main modal — clean and focused
 export function AuthModal({
   onClose, onAuth, signIn, signUp,
   resendConfirmation, sendPasswordReset, updatePassword,
   needsNewPass = false,
 }: AuthModalProps) {
-  const [view,       setView]       = useState<AuthView>(needsNewPass ? 'update_password' : 'sign_in')
-  const [email,      setEmail]      = useState('')
-  const [pass,       setPass]       = useState('')
-  const [pass2,      setPass2]      = useState('')
-  const [showPass,   setShowPass]   = useState(false)
-  const [loading,    setLoading]    = useState(false)
-  const [errMsg,     setErrMsg]     = useState('')
-  const [okMsg,      setOkMsg]      = useState('')
+  const [view,        setView]      = useState<AuthView>(needsNewPass ? 'update_password' : 'sign_in')
+  const [email,       setEmail]     = useState('')
+  const [pass,        setPass]      = useState('')
+  const [pass2,       setPass2]     = useState('')
+  const [showPass,    setShowPass]  = useState(false)
+  const [loading,     setLoading]   = useState(false)
+  const [errMsg,      setErrMsg]    = useState('')
+  const [okMsg,       setOkMsg]     = useState('')
   const [pendingEmail, setPending]  = useState('')
 
   const clearMsgs = () => { setErrMsg(''); setOkMsg('') }
@@ -49,27 +152,14 @@ export function AuthModal({
 
   const handleSignUp = async () => {
     clearMsgs()
-    if (!email.trim())    { setErrMsg('Please enter your email.'); return }
-    if (pass.length < 6)  { setErrMsg('Password must be at least 6 characters.'); return }
-    if (pass !== pass2)   { setErrMsg('Passwords do not match.'); return }
+    if (!email.trim())   { setErrMsg('Please enter your email.'); return }
+    if (pass.length < 6) { setErrMsg('Password must be at least 6 characters.'); return }
+    if (pass !== pass2)  { setErrMsg('Passwords do not match.'); return }
     setLoading(true)
     const result = await signUp(email.trim(), pass)
-    // Inside handleSignUp, after const result = await signUp(...)
-if (result === 'SMTP_ERROR') {
-  setErrMsg('Email service not configured. Contact the administrator.')
-  return
-}
     setLoading(false)
-    if (!result)                  { onAuth(); onClose(); return }
-    if (result === 'SMTP_ERROR') {
-  setErrMsg('Email service not configured. Please contact admin.')
-  return
-}
-if (result === 'CONFIRM_EMAIL') {
-  setPending(email.trim())
-  setView('confirm_pending')
-  return
-}
+    if (!result)                   { onAuth(); onClose(); return }
+    if (result === 'SMTP_ERROR')   { setErrMsg('Email service not configured. Contact the administrator.'); return }
     if (result === 'CONFIRM_EMAIL') { setPending(email.trim()); setView('confirm_pending'); return }
     setErrMsg(result)
   }
@@ -105,84 +195,6 @@ if (result === 'CONFIRM_EMAIL') {
     setTimeout(() => { onAuth(); onClose() }, 1500)
   }
 
-  const inp = 'input-field'
-
-  const EmailField = () => (
-    <div>
-      <label className="label">Email</label>
-      <div className="relative">
-        <Mail size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-700 pointer-events-none" />
-        <input type="email" value={email}
-          onChange={e => { setEmail(e.target.value); clearMsgs() }}
-          placeholder="you@example.com" autoComplete="email"
-          className={`${inp} pl-9`}
-          onKeyDown={e => {
-            if (e.key !== 'Enter') return
-            if (view === 'sign_in') handleSignIn()
-            else if (view === 'forgot_password') handleForgot()
-          }}
-        />
-      </div>
-    </div>
-  )
-
-  const PassField = ({ label = 'Password', value, onChange, auto = 'current-password' }:
-    { label?: string; value: string; onChange: (v: string) => void; auto?: string }) => (
-    <div>
-      <label className="label">{label}</label>
-      <div className="relative">
-        <Lock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-700 pointer-events-none" />
-        <input
-          type={showPass ? 'text' : 'password'} value={value}
-          onChange={e => { onChange(e.target.value); clearMsgs() }}
-          placeholder="Min. 6 characters" autoComplete={auto}
-          className={`${inp} pl-9 pr-10`}
-        />
-        <button type="button" onClick={() => setShowPass(v => !v)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-700 hover:text-brand-400">
-          {showPass ? <EyeOff size={13} /> : <Eye size={13} />}
-        </button>
-      </div>
-    </div>
-  )
-
-  const Feedback = () => (
-    <>
-      {okMsg && (
-        <div className="flex items-start gap-2 p-3 rounded-lg bg-green-900/20 border border-green-800/30 text-green-300 text-xs leading-relaxed">
-          <CheckCircle2 size={13} className="mt-0.5 shrink-0" /><span>{okMsg}</span>
-        </div>
-      )}
-      {errMsg && (
-        <div className="flex items-start gap-2 p-3 rounded-lg bg-red-900/20 border border-red-800/30 text-red-300 text-xs leading-relaxed">
-          <AlertCircle size={13} className="mt-0.5 shrink-0" /><span>{errMsg}</span>
-        </div>
-      )}
-    </>
-  )
-
-  const SubmitBtn = ({ label, onClick }: { label: string; onClick: () => void }) => (
-    <button onClick={onClick} disabled={loading} className="btn-primary w-full py-2.5">
-      {loading
-        ? <span className="flex items-center justify-center gap-2">
-            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-            </svg>
-            Please wait…
-          </span>
-        : label
-      }
-    </button>
-  )
-
-  const BackBtn = ({ to, label = 'Back to Sign In' }: { to: AuthView; label?: string }) => (
-    <button onClick={() => go(to)}
-      className="flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-300 transition-colors">
-      <ArrowLeft size={12} /> {label}
-    </button>
-  )
-
   const titles: Record<AuthView, string> = {
     sign_in: 'Sign In', sign_up: 'Create Account',
     confirm_pending: 'Check Your Email',
@@ -205,7 +217,7 @@ if (result === 'CONFIRM_EMAIL') {
           </button>
         </div>
 
-        {/* Tabs (sign_in / sign_up only) */}
+        {/* Tabs */}
         {(view === 'sign_in' || view === 'sign_up') && (
           <div className="flex gap-1 mx-6 mt-4 bg-surface-100 border border-brand-900/40 rounded-lg p-1">
             {(['sign_in', 'sign_up'] as AuthView[]).map(v => (
@@ -220,23 +232,21 @@ if (result === 'CONFIRM_EMAIL') {
         )}
 
         <div className="px-6 py-5 flex flex-col gap-3">
-          <Feedback />
+          <Feedback okMsg={okMsg} errMsg={errMsg} />
 
           {/* ── SIGN IN ── */}
           {view === 'sign_in' && (
             <>
-              <EmailField />
-              <PassField value={pass} onChange={setPass} />
+              <EmailField email={email} setEmail={setEmail} clearMsgs={clearMsgs} onEnter={handleSignIn} />
+              <PassField value={pass} onChange={v => { setPass(v); clearMsgs() }} showPass={showPass} toggleShow={() => setShowPass(p => !p)} />
               <button onClick={() => go('forgot_password')}
                 className="text-right text-xs text-brand-600 hover:text-brand-300 transition-colors -mt-1">
                 Forgot password?
               </button>
-              <SubmitBtn label="Sign In" onClick={handleSignIn} />
+              <SubmitBtn label="Sign In" onClick={handleSignIn} loading={loading} />
               <p className="text-center text-xs text-brand-800">
                 No account?{' '}
-                <button onClick={() => go('sign_up')} className="text-brand-500 hover:text-brand-300 underline underline-offset-2">
-                  Sign up
-                </button>
+                <button onClick={() => go('sign_up')} className="text-brand-500 hover:text-brand-300 underline underline-offset-2">Sign up</button>
               </p>
             </>
           )}
@@ -244,15 +254,13 @@ if (result === 'CONFIRM_EMAIL') {
           {/* ── SIGN UP ── */}
           {view === 'sign_up' && (
             <>
-              <EmailField />
-              <PassField label="Password" value={pass} onChange={setPass} auto="new-password" />
-              <PassField label="Confirm Password" value={pass2} onChange={setPass2} auto="new-password" />
-              <SubmitBtn label="Create Account" onClick={handleSignUp} />
+              <EmailField email={email} setEmail={setEmail} clearMsgs={clearMsgs} />
+              <PassField label="Password" value={pass} onChange={v => { setPass(v); clearMsgs() }} auto="new-password" showPass={showPass} toggleShow={() => setShowPass(p => !p)} />
+              <PassField label="Confirm Password" value={pass2} onChange={v => { setPass2(v); clearMsgs() }} auto="new-password" showPass={showPass} toggleShow={() => setShowPass(p => !p)} />
+              <SubmitBtn label="Create Account" onClick={handleSignUp} loading={loading} />
               <p className="text-center text-xs text-brand-800">
                 Already have an account?{' '}
-                <button onClick={() => go('sign_in')} className="text-brand-500 hover:text-brand-300 underline underline-offset-2">
-                  Sign in
-                </button>
+                <button onClick={() => go('sign_in')} className="text-brand-500 hover:text-brand-300 underline underline-offset-2">Sign in</button>
               </p>
             </>
           )}
@@ -275,7 +283,7 @@ if (result === 'CONFIRM_EMAIL') {
                   <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
                   Resend confirmation email
                 </button>
-                <BackBtn to="sign_in" />
+                <BackBtn onClick={() => go('sign_in')} />
               </div>
             </>
           )}
@@ -286,9 +294,9 @@ if (result === 'CONFIRM_EMAIL') {
               <p className="text-brand-700 text-xs leading-relaxed -mt-1">
                 Enter your email and we'll send you a password reset link.
               </p>
-              <EmailField />
-              <SubmitBtn label="Send Reset Link" onClick={handleForgot} />
-              <BackBtn to="sign_in" />
+              <EmailField email={email} setEmail={setEmail} clearMsgs={clearMsgs} onEnter={handleForgot} />
+              <SubmitBtn label="Send Reset Link" onClick={handleForgot} loading={loading} />
+              <BackBtn onClick={() => go('sign_in')} />
             </>
           )}
 
@@ -298,9 +306,9 @@ if (result === 'CONFIRM_EMAIL') {
               <p className="text-brand-700 text-xs leading-relaxed -mt-1">
                 Choose a new password for your account.
               </p>
-              <PassField label="New Password" value={pass} onChange={setPass} auto="new-password" />
-              <PassField label="Confirm New Password" value={pass2} onChange={setPass2} auto="new-password" />
-              <SubmitBtn label="Update Password" onClick={handleUpdatePassword} />
+              <PassField label="New Password" value={pass} onChange={v => { setPass(v); clearMsgs() }} auto="new-password" showPass={showPass} toggleShow={() => setShowPass(p => !p)} />
+              <PassField label="Confirm New Password" value={pass2} onChange={v => { setPass2(v); clearMsgs() }} auto="new-password" showPass={showPass} toggleShow={() => setShowPass(p => !p)} />
+              <SubmitBtn label="Update Password" onClick={handleUpdatePassword} loading={loading} />
             </>
           )}
         </div>
