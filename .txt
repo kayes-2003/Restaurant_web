@@ -1,0 +1,31 @@
+01. admin
+    AdminitemCard => frontpages
+    AdminItemModel => addNew items
+    StatsBar => Tag items
+
+02. customer
+    CartDrawer => add, minus, suppingBag/sidebar CartDrawer
+    MenuCard => discountedPrice, formatPrice
+
+
+03. shared
+    AuthModal => signIn, signUp, resendConfirmation, sendPasswordReset, updatePassword
+    CategoryTabs => Tag items
+    Header => profile, cartCount, onSignIn, onCartOpen, onSignOut, onAdminPanel
+    Loader => loading...
+
+
+04. hooks(supbase)
+    useAuth => signIn, signUp, signOut, resendConfirmation, sendPasswordReset, updatePassword/supabase connecting
+    useCart => cartItem
+    useMenu => menuItems
+
+
+05. lib => supabase connect + symble
+
+06. pages 
+    AdminPage => admin panel 
+    menuPage => menu search and others
+
+
+

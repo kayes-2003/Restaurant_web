@@ -18,17 +18,17 @@ export function AdminItemCard({ item, layout = 'grid', onEdit, onDelete }: Admin
     return (
       <div className={cn(
         'flex items-center gap-4 p-3 rounded-xl border transition-all',
-        'bg-surface-50 border-brand-900/30 hover:border-brand-700/40'
+        'bg-black border-brand-900/30 hover:border-brand-700/40'
       )}>
-        <div className="w-12 h-12 rounded-lg bg-surface-200 flex items-center justify-center overflow-hidden shrink-0">
+        <div className="w-20 h-20 rounded-lg bg-white flex items-center justify-center overflow-hidden shrink-0">
           {hasImage
             ? <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
             : <span className="text-2xl">{item.image_url}</span>
           }
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-brand-200 font-semibold text-sm truncate">{item.name}</p>
-          <p className="text-brand-700 text-xs">{item.category}</p>
+          <p className="text-white font-semibold text-lg truncate">{item.name}</p>
+          <p className="text-white text-xs">{item.category}</p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           {item.offer_percent > 0 && (

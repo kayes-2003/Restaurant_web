@@ -31,7 +31,7 @@ export function Header({
             </div>
             <div className="hidden sm:block">
               <p className="font-display font-bold text-brand-200 leading-tight">La Maison</p>
-              <p className="text-brand-800 text-[10px] tracking-widest uppercase leading-none">Fine Dining</p>
+              <p className="text-brand-300 text-[10px] tracking-widest uppercase leading-none">Fine Dining</p>
             </div>
           </div>
 
