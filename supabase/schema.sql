@@ -105,3 +105,28 @@ on conflict do nothing;
 --   update public.profiles set role = 'admin' where email = 'your@email.com';
 --
 -- The app will detect your role from the DB — no hardcoded email needed.
+
+
+create table public.orders (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid references auth.users(id) on delete cascade not null,
+  items      jsonb not null,
+  total      numeric(10,2) not null,
+  status     text not null default 'pending'
+             check (status in ('pending','paid','failed','cancelled')),
+  created_at timestamptz default now()
+);
+
+alter table public.orders enable row level security;
+
+create policy "Users see own orders"
+  on public.orders for select
+  using (auth.uid() = user_id);
+
+create policy "Users create own orders"
+  on public.orders for insert
+  with check (auth.uid() = user_id);
+
+create policy "Edge function can update orders"
+  on public.orders for update
+  using (true);

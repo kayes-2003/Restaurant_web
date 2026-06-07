@@ -1,22 +1,36 @@
+import { useState } from 'react'
 import { X, Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
 import { discountedPrice, formatPrice, isValidUrl } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import type { CartSummary } from '@/types'
+import { CheckoutModal } from './CheckoutModal'
 
 interface CartDrawerProps {
   summary:     CartSummary
+  userId:      string          // ← add this
   onClose:     () => void
   onRemove:    (cartItemId: string) => void
   onUpdateQty: (cartItemId: string, qty: number) => void
   onClear:     () => void
 }
 
-export function CartDrawer({ summary, onClose, onRemove, onUpdateQty, onClear }: CartDrawerProps) {
-  const handleCheckout = () => {
-    toast.success('Order placed! (demo)')
+export function CartDrawer({ summary, userId, onClose, onRemove, onUpdateQty, onClear }: CartDrawerProps) {
+  const [showCheckout, setShowCheckout] = useState(false)
+
+  const handlePaid = () => {
+    setShowCheckout(false)
     onClear()
     onClose()
+    toast.success('Payment successful! Your order is confirmed 🎉')
   }
+
+  // Map CartSummary items → CheckoutModal's CartItem shape
+  const checkoutItems = summary.items.map(ci => ({
+    id:       ci.id,
+    name:     ci.menu_items.name,
+    price:    discountedPrice(ci.menu_items.price, ci.menu_items.offer_percent),
+    quantity: ci.quantity,
+  }))
 
   return (
     <>
@@ -28,6 +42,7 @@ export function CartDrawer({ summary, onClose, onRemove, onUpdateQty, onClear }:
 
       {/* Drawer */}
       <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-sm flex flex-col bg-surface-50 border-l border-brand-800/30 shadow-2xl animate-slide-in">
+
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-brand-900/30">
           <div className="flex items-center gap-2">
@@ -119,8 +134,11 @@ export function CartDrawer({ summary, onClose, onRemove, onUpdateQty, onClear }:
                 {formatPrice(summary.total)}
               </span>
             </div>
-            <button onClick={handleCheckout} className="btn-primary w-full py-3 text-base">
-              Place Order
+            <button
+              onClick={() => setShowCheckout(true)}
+              className="btn-primary w-full py-3 text-base"
+            >
+              Checkout · {formatPrice(summary.total)}
             </button>
             <button onClick={onClear} className="btn-ghost w-full text-brand-700 hover:text-red-400 text-xs">
               Clear cart
@@ -128,6 +146,16 @@ export function CartDrawer({ summary, onClose, onRemove, onUpdateQty, onClear }:
           </div>
         )}
       </div>
+
+      {/* Checkout Modal — rendered outside drawer so z-index is clean */}
+      {showCheckout && (
+        <CheckoutModal
+          items={checkoutItems}
+          userId={userId}
+          onClose={() => setShowCheckout(false)}
+          onPaid={handlePaid}
+        />
+      )}
     </>
   )
 }

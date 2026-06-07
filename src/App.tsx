@@ -20,12 +20,10 @@ export default function App() {
   const [showAuth, setShowAuth] = useState(false)
   const [showCart, setShowCart] = useState(false)
 
-  // Auto-open auth modal when user arrives via password-reset link
   useEffect(() => {
     if (auth.needsNewPass) setShowAuth(true)
   }, [auth.needsNewPass])
 
-  // If user signs out while on admin, return to menu
   useEffect(() => {
     if (!auth.uid) { setView('menu'); setShowCart(false) }
   }, [auth.uid])
@@ -87,6 +85,7 @@ export default function App() {
       {showCart && !auth.isAdmin && (
         <CartDrawer
           summary={cart.summary}
+          userId={auth.uid ?? ''}
           onClose={() => setShowCart(false)}
           onRemove={cart.removeFromCart}
           onUpdateQty={cart.updateQuantity}

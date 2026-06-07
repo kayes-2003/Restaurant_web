@@ -56,3 +56,33 @@ export type AuthView =
   | 'confirm_pending'   // waiting for email confirmation
   | 'forgot_password'   // enter email to get reset link
   | 'update_password'   // enter new password (after clicking reset link)
+
+
+
+
+  export type OrderStatus = 'pending' | 'paid' | 'failed' | 'cancelled'
+
+export interface Order {
+  id:         string
+  user_id:    string
+  items:      CartItem[]
+  total:      number
+  status:     OrderStatus
+  created_at: string
+}
+
+export interface CartItem {
+  id:       string
+  name:     string
+  price:    number
+  quantity: number
+}
+
+
+// Add this — separate from your existing CartItem
+export interface CheckoutItem {
+  id:       string
+  name:     string
+  price:    number
+  quantity: number
+}
